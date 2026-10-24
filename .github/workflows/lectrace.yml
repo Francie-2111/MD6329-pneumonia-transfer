@@ -8,6 +8,9 @@ on:
       - "figures/external_xai.png"
       - "lectrace.toml"
       - "requirements-lectrace.txt"
+      - "website/**"
+      - "report/MD6329_Report.pdf"
+      - "figures/internal_ablation.png"
       - ".github/workflows/lectrace.yml"
   workflow_dispatch:
 
@@ -35,8 +38,14 @@ jobs:
           cache-dependency-path: requirements-lectrace.txt
       - name: Install LecTrace
         run: python -m pip install -r requirements-lectrace.txt
-      - name: Build presentation
-        run: lectrace build --output _site --no-incremental
+      - name: Build presentation and project website
+        run: |
+          lectrace build --output _site/lectrace --no-incremental
+          cp website/index.html website/styles.css website/script.js _site/
+          mkdir -p _site/assets _site/report
+          cp figures/internal_ablation.png figures/external_xai.png _site/assets/
+          cp report/MD6329_Report.pdf _site/report/
+          touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

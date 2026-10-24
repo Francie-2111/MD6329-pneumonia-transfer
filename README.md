@@ -64,8 +64,10 @@ pip install -r requirements-lectrace.txt
 lectrace serve presentation/01_pneumonia_transfer.py
 ```
 
-The deployed presentation is available at
+The project website is available at
 [francie-2111.github.io/MD6329-pneumonia-transfer](https://francie-2111.github.io/MD6329-pneumonia-transfer/).
+The LecTrace presentation is available from the website or directly at
+[francie-2111.github.io/MD6329-pneumonia-transfer/lectrace](https://francie-2111.github.io/MD6329-pneumonia-transfer/lectrace/).
 
 The exact narration for every execution step is in
 [`presentation/LINE_BY_LINE_SCRIPT.md`](presentation/LINE_BY_LINE_SCRIPT.md). The narration is

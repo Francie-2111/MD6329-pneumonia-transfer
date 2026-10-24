@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MD6329 project on external transfer and spatial evidence in pneumonia classification.">
+  <title>External Transfer in Pneumonia Classification</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Project home">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span>MD6329 Project</span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#question">Question</a>
+      <a href="#method">Method</a>
+      <a href="#results">Results</a>
+      <a href="#evidence">Evidence</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero section-shell">
+      <div class="hero-copy">
+        <p class="eyebrow">Deep learning for medical imaging</p>
+        <h1>External Transfer and Spatial Evidence in Pneumonia Classification</h1>
+        <p class="lead">
+          Can a compact chest X-ray classifier transfer more reliably across hospitals
+          while placing more of its evidence inside annotated lung-opacity regions?
+        </p>
+        <div class="actions" aria-label="Project resources">
+          <a class="button primary" href="report/MD6329_Report.pdf" target="_blank" rel="noopener">Read the report</a>
+          <a class="button secondary" href="lectrace/">Open LecTrace</a>
+          <a class="button ghost" href="https://github.com/Francie-2111/MD6329-pneumonia-transfer" target="_blank" rel="noopener">View GitHub</a>
+        </div>
+        <p class="author">CUI SHIHAN · G2602393H · Nanyang Technological University</p>
+      </div>
+
+      <div class="hero-panel" aria-label="Study summary">
+        <div class="scan-frame" aria-hidden="true">
+          <div class="lung left"></div>
+          <div class="lung right"></div>
+          <div class="focus-ring"></div>
+          <span class="scan-label">64 × 64</span>
+        </div>
+        <div class="hero-stat">
+          <span>Final external AUROC</span>
+          <strong>0.931</strong>
+          <small>AC-JSD on CheXpert</small>
+        </div>
+      </div>
+    </section>
+
+    <section id="question" class="section-shell section-block">
+      <div class="section-heading">
+        <p class="eyebrow">Research question</p>
+        <h2>Performance at one hospital is not enough.</h2>
+      </div>
+      <div class="question-grid">
+        <p class="large-copy">
+          The project tests whether higher native image resolution and source-only
+          acquisition-style consistency training improve external pneumonia classification
+          and make Grad-CAM evidence better aligned with public opacity annotations.
+        </p>
+        <div class="context-card">
+          <span class="card-index">01</span>
+          <h3>The clinical concern</h3>
+          <p>Changes in population, acquisition and labeling can reduce performance outside the source dataset. A high score also does not reveal whether the model used the lesion or a shortcut.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="method" class="method-section">
+      <div class="section-shell section-block">
+        <div class="section-heading light">
+          <p class="eyebrow">Method</p>
+          <h2>One architecture, controlled changes.</h2>
+          <p>A one-channel ResNet18 is trained on PneumoniaMNIST. Resolution and training objectives are separated before frozen external evaluation.</p>
+        </div>
+
+        <div class="pipeline" role="list" aria-label="Experimental pipeline">
+          <article role="listitem">
+            <span>1</span>
+            <h3>Reproduce</h3>
+            <p>B28 PneumoniaMNIST baseline</p>
+          </article>
+          <div class="pipeline-arrow" aria-hidden="true">→</div>
+          <article role="listitem">
+            <span>2</span>
+            <h3>Isolate</h3>
+            <p>Native 64-pixel resolution</p>
+          </article>
+          <div class="pipeline-arrow" aria-hidden="true">→</div>
+          <article role="listitem">
+            <span>3</span>
+            <h3>Improve</h3>
+            <p>Mild augmentation + JSD consistency</p>
+          </article>
+          <div class="pipeline-arrow" aria-hidden="true">→</div>
+          <article role="listitem">
+            <span>4</span>
+            <h3>Evaluate</h3>
+            <p>RSNA, CheXpert and Grad-CAM</p>
+          </article>
+        </div>
+
+        <div class="method-note">
+          <strong>AC-JSD</strong>
+          <p>Each source image is paired with two mild acquisition-style views. Cross-entropy learns the label; Jensen–Shannon consistency discourages predictions from following brightness, contrast, rotation, blur or small-noise changes.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="results" class="section-shell section-block">
+      <div class="section-heading">
+        <p class="eyebrow">Key results</p>
+        <h2>Resolution drives accuracy; consistency strengthens ranking.</h2>
+      </div>
+
+      <div class="metric-grid">
+        <article class="metric-card accent">
+          <p>RSNA accuracy</p>
+          <strong>71.89<span>%</span> → 80.57<span>%</span></strong>
+          <small>B28 to B64 plain</small>
+        </article>
+        <article class="metric-card">
+          <p>RSNA AUROC</p>
+          <strong>0.872 → 0.901</strong>
+          <small>B64 plain to AC-JSD</small>
+        </article>
+        <article class="metric-card">
+          <p>CheXpert AUROC</p>
+          <strong>0.721 → 0.931</strong>
+          <small>B64 plain to AC-JSD</small>
+        </article>
+        <article class="metric-card">
+          <p>CheXpert accuracy</p>
+          <strong>62.24<span>%</span> → 83.92<span>%</span></strong>
+          <small>Final one-shot evaluation</small>
+        </article>
+      </div>
+
+      <figure class="feature-figure">
+        <div class="figure-copy">
+          <p class="eyebrow">Internal ablation</p>
+          <h3>Different metrics favor different models.</h3>
+          <p>Aug1 gives the highest internal accuracy. AC-JSD gives the highest internal AUROC and sensitivity, with lower specificity at the fixed threshold.</p>
+        </div>
+        <a href="assets/internal_ablation.png" target="_blank" rel="noopener" aria-label="Open internal ablation figure">
+          <img src="assets/internal_ablation.png" alt="Internal comparison of accuracy, sensitivity, specificity and AUROC for Plain, Aug1, CE3 and AC-JSD models.">
+        </a>
+      </figure>
+    </section>
+
+    <section id="evidence" class="evidence-section">
+      <div class="section-shell section-block evidence-grid">
+        <div class="evidence-copy">
+          <p class="eyebrow">Spatial evidence</p>
+          <h2>Interpretability improves, but the result remains cautious.</h2>
+          <p>AC-JSD improves average box-energy alignment and matched mean-fill occlusion over plain training. Aug1 has the strongest box alignment, while a simple center prior remains competitive.</p>
+          <p class="takeaway">The maps depend on learned parameters, but better heatmaps do not by themselves prove causal lesion recognition.</p>
+        </div>
+        <figure>
+          <a href="assets/external_xai.png" target="_blank" rel="noopener" aria-label="Open external explanation figure">
+            <img src="assets/external_xai.png" alt="RSNA box-energy alignment and pointing-hit rate for four learned models with a center-prior reference.">
+          </a>
+          <figcaption>Matched RSNA explanation results on 300 positive cases. Error bars show uncertainty; dashed lines show the center prior.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section-shell closing">
+      <p class="eyebrow">Explore the complete project</p>
+      <h2>Read the analysis, step through the neural program, or inspect the code.</h2>
+      <div class="actions centered">
+        <a class="button primary" href="report/MD6329_Report.pdf" target="_blank" rel="noopener">Full PDF report</a>
+        <a class="button secondary" href="lectrace/">Interactive LecTrace</a>
+        <a class="button ghost" href="https://github.com/Francie-2111/MD6329-pneumonia-transfer" target="_blank" rel="noopener">GitHub repository</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>MD6329 Deep Learning Project</span>
+    <span>CUI SHIHAN · 2026</span>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>
