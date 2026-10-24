@@ -1,4 +1,4 @@
-"""Ten-minute LecTrace presentation for the MD6329 mini-project.
+"""LecTrace presentation for the MD6329 mini-project.
 
 The trace uses a compact teaching example for single-case calculations and the
 recorded cohort-level outputs from the full experiment notebook for conclusions.
@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import math
 
-from lectrace import image, link, note, plot, table, text
-from _data import EXTERNAL_RESULTS, INTERNAL_RESULTS, XAI_RESULTS
+from lectrace import image, link, plot, table, text
+from _data import EXTERNAL_RESULTS, INTERNAL_RESULTS, XAI_RESULTS, metric_chart
 
 
 def main():
@@ -44,8 +44,6 @@ def main():
         ],
         caption="Three-domain evaluation design",
     )
-    note("Speaking time: about 2–3 minutes. Frame the project as external transfer plus spatial evidence, not only source accuracy.")
-
     resolution = state_1_resolution()  # @inspect resolution
     resolution  # @clear resolution @invisible
     forward = state_2_forward_pass()  # @inspect forward
@@ -73,7 +71,6 @@ def main():
         with complementary spatial tests. A better heatmap supports interpretation, but it
         does not by itself establish that the model has learned a causal disease mechanism.
     """)
-    note("End at about 10 minutes. Return to the research question: transfer improved, and spatial evidence improved modestly rather than decisively.")
 
 
 def state_1_resolution():
@@ -110,7 +107,7 @@ def state_1_resolution():
         x="split",
         color="model",
     ))  # @stepover
-    note("What changes: spatial sampling only. Why it matters: this is the largest accuracy gain, so resolution must be separated from the later training-method gain.")
+    text("**Why this state matters.** Spatial sampling is the only controlled change. It produces the largest accuracy gain, so resolution must be separated from the later training-method gain.")
     return {"pixel_ratio": round(pixel_ratio, 2), "internal_gain_pp": round(internal_accuracy_gain_pp, 2), "rsna_gain_pp": round(rsna_accuracy_gain_pp, 2)}
 
 
@@ -144,7 +141,7 @@ def state_2_forward_pass():
         ],
         caption="Compact teaching example of the exact inference calculation",
     )
-    note("What changes: features become logits, then probabilities. Why it matters: AUROC uses score ranking, while accuracy additionally depends on the 0.5 threshold.")
+    text("**Why this state matters.** Features become logits and probabilities. AUROC uses score ranking, while accuracy additionally depends on the 0.5 threshold.")
     return {"logits": logits, "margin": round(logit_margin, 4), "pneumonia_probability": round(pneumonia_probability, 4), "prediction": predicted_class}
 
 
@@ -207,7 +204,7 @@ def state_3_consistency():
         date="2020",
         description="The consistency principle that motivated AC-JSD.",
     )
-    note("What changes: the same underlying image receives different acquisition-style views. Why it matters: JSD explicitly discourages predictions from changing with these nuisance factors.")
+    text("**Why this state matters.** The underlying anatomy is unchanged while acquisition-style factors vary. JSD discourages the prediction from following those nuisance changes.")
     return {"lambda": selected_lambda, "unstable_jsd": round(plain_jsd, 4), "consistent_jsd": round(consistent_jsd, 4)}
 
 
@@ -239,7 +236,7 @@ def state_4_external_transfer():
         x="dataset",
         color="model",
     ))  # @stepover
-    note("What changes: the hospital and population. Why it matters: AC-JSD improves ranking on both external datasets, while the small RSNA accuracy change is threshold-dependent and uncertain.")
+    text("**Why this state matters.** The hospital and population change. AC-JSD improves ranking on both external datasets, while the small RSNA accuracy change is threshold-dependent and uncertain.")
     return {"rsna": rsna_gain, "chexpert": chexpert_gain}
 
 
@@ -276,7 +273,7 @@ def state_5_spatial_evidence():
         authors=["Selvaraju", "Cogswell", "Das", "Vedantam", "Parikh", "Batra"],
         date="2017",
     )
-    note("What changes: model weights change where Grad-CAM places energy. Why it matters: AC-JSD improves average alignment over plain, but Aug1 and the center prior prevent an overclaim of lesion localization.")
+    text("**Why this state matters.** Training changes where Grad-CAM places energy. AC-JSD improves average alignment over plain, but Aug1 and the center prior prevent an overclaim of lesion localization.")
     return interpretation
 
 
@@ -296,11 +293,10 @@ def mean_cross_entropy(predictions, target):
 
 def jensen_shannon(predictions):
     mean_distribution = [sum(view[k] for view in predictions) / len(predictions) for k in range(len(predictions[0]))]
-    divergences = []
-    for distribution in predictions:
-        divergence = sum(p * math.log(p / mean_distribution[k]) for k, p in enumerate(distribution) if p > 0)
-        divergences.append(divergence)
-    jsd = sum(divergences) / len(divergences)
+    kl_clean = sum(p * math.log(p / mean_distribution[k]) for k, p in enumerate(predictions[0]) if p > 0)
+    kl_view_1 = sum(p * math.log(p / mean_distribution[k]) for k, p in enumerate(predictions[1]) if p > 0)
+    kl_view_2 = sum(p * math.log(p / mean_distribution[k]) for k, p in enumerate(predictions[2]) if p > 0)
+    jsd = (kl_clean + kl_view_1 + kl_view_2) / 3
     return jsd
 
 
@@ -318,28 +314,6 @@ def area_corrected_energy(inside_energy, total_energy, box_area_fraction):
     observed_fraction = inside_energy / (total_energy + 1e-12)
     corrected_energy = observed_fraction - box_area_fraction
     return corrected_energy
-
-
-def metric_chart(title, values, x, color):
-    return {
-        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-        "title": title,
-        "width": 520,
-        "height": 250,
-        "data": {"values": values},
-        "mark": {"type": "bar", "tooltip": True},
-        "encoding": {
-            "x": {"field": x, "type": "nominal", "axis": {"labelAngle": 0}},
-            "xOffset": {"field": color},
-            "y": {"field": "value", "type": "quantitative", "scale": {"domain": [0.5, 1.0]}},
-            "color": {"field": color, "type": "nominal"},
-            "tooltip": [
-                {"field": x, "type": "nominal"},
-                {"field": color, "type": "nominal"},
-                {"field": "value", "type": "quantitative", "format": ".4f"},
-            ],
-        },
-    }
 
 
 if __name__ == "__main__":

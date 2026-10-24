@@ -51,7 +51,7 @@ Native 64-pixel input produces the largest accuracy gain over B28. Augmentation 
 - `report/`: final NeurIPS-style report and LaTeX source
 - `docs/DATA.md`: dataset access and storage
 - `docs/REPRODUCIBILITY.md`: execution order
-- `presentation/`: ten-minute LecTrace script and speaking guide
+- `presentation/`: LecTrace script and separate speaking guides
 
 ## LecTrace presentation
 
@@ -66,6 +66,11 @@ lectrace serve presentation/01_pneumonia_transfer.py
 
 The deployed presentation is available at
 [francie-2111.github.io/MD6329-pneumonia-transfer](https://francie-2111.github.io/MD6329-pneumonia-transfer/).
+
+The exact narration for every execution step is in
+[`presentation/LINE_BY_LINE_SCRIPT.md`](presentation/LINE_BY_LINE_SCRIPT.md). The narration is
+kept outside the LecTrace viewer so the trace itself contains only the experiment, code,
+results, and interpretation.
 
 ## Quick start
 

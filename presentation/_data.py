@@ -19,3 +19,26 @@ XAI_RESULTS = [
     {"model": "AC-JSD", "area-corrected energy": -0.0162, "pointing hit": 0.0867, "mean-fill occlusion": 0.0913},
     {"model": "Center prior", "area-corrected energy": 0.1011, "pointing hit": 0.1300, "mean-fill occlusion": None},
 ]
+
+
+def metric_chart(title, values, x, color):
+    """Return a compact grouped-bar Vega-Lite specification."""
+    return {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "title": title,
+        "width": 520,
+        "height": 250,
+        "data": {"values": values},
+        "mark": {"type": "bar", "tooltip": True},
+        "encoding": {
+            "x": {"field": x, "type": "nominal", "axis": {"labelAngle": 0}},
+            "xOffset": {"field": color},
+            "y": {"field": "value", "type": "quantitative", "scale": {"domain": [0.5, 1.0]}},
+            "color": {"field": color, "type": "nominal"},
+            "tooltip": [
+                {"field": x, "type": "nominal"},
+                {"field": color, "type": "nominal"},
+                {"field": "value", "type": "quantitative", "format": ".4f"},
+            ],
+        },
+    }
