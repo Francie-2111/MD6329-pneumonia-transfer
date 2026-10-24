@@ -21,6 +21,10 @@ __pycache__/
 .venv/
 venv/
 
+# LecTrace build output
+_site/
+.lectrace_cache.json
+
 # Editors and OS
 .vscode/
 .idea/

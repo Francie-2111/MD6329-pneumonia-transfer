@@ -1,0 +1,4 @@
+[lectrace]
+title = "MD6329 — Pneumonia Transfer and Spatial Evidence"
+lectures = ["presentation/01_pneumonia_transfer.py"]
+output = "_site"

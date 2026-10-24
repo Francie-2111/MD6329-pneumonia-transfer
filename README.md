@@ -5,6 +5,7 @@ A compact deep-learning study of pediatric pneumonia classification, external tr
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Framework](https://img.shields.io/badge/PyTorch-2.1%2B-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Notebook](https://img.shields.io/badge/Notebook-Colab-F9AB00?logo=googlecolab&logoColor=white)](notebooks/MD6329_Final_Complete_Experiment_Notebook.ipynb)
+[![LecTrace](https://img.shields.io/badge/Presentation-LecTrace-0969DA)](https://francie-2111.github.io/MD6329-pneumonia-transfer/)
 
 ## Research question
 
@@ -50,6 +51,21 @@ Native 64-pixel input produces the largest accuracy gain over B28. Augmentation 
 - `report/`: final NeurIPS-style report and LaTeX source
 - `docs/DATA.md`: dataset access and storage
 - `docs/REPRODUCIBILITY.md`: execution order
+- `presentation/`: ten-minute LecTrace script and speaking guide
+
+## LecTrace presentation
+
+The interactive ten-minute presentation selects five execution states: resolution,
+forward inference, acquisition-view consistency, external transfer and spatial evidence.
+Run it locally with:
+
+```bash
+pip install -r requirements-lectrace.txt
+lectrace serve presentation/01_pneumonia_transfer.py
+```
+
+The deployed presentation is available at
+[francie-2111.github.io/MD6329-pneumonia-transfer](https://francie-2111.github.io/MD6329-pneumonia-transfer/).
 
 ## Quick start
 
