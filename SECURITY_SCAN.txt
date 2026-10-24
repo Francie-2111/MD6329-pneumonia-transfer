@@ -1,0 +1,1 @@
+No SAS signatures, GitHub tokens, private keys, or local user paths detected in text files.

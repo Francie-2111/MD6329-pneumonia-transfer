@@ -1,0 +1,33 @@
+# Data and model artifacts
+data/
+private_data/
+checkpoints/
+runs/
+*.pt
+*.pth
+*.ckpt
+*.dcm
+*.npz
+*.zip
+
+# CheXpert / CheXlocalize licensed files
+CheXpert/
+CheXlocalize/
+
+# Python and notebooks
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Generated report files
+report/*.aux
+report/*.log
+report/*.out

@@ -1,0 +1,117 @@
+{
+  "status": "one_shot_complete_locked",
+  "completed_utc": "2026-10-24T11:41:42.203849+00:00",
+  "primary_endpoint": "paired patient-cluster AUROC difference: AC-JSD minus B64 plain",
+  "primary_result": {
+    "difference_acjsd_minus_plain": 0.20973044049967127,
+    "ci95": [
+      0.12149785761762333,
+      0.30217322894189036
+    ],
+    "permutation_p_two_sided": 9.999000099990002e-05
+  },
+  "metrics": {
+    "plain": {
+      "accuracy": 0.6223776223776224,
+      "balanced_accuracy": 0.6495726495726495,
+      "auroc": 0.7212360289283366,
+      "average_precision": 0.9052441168704992,
+      "brier": 0.2833786904811859,
+      "sensitivity": 0.6068376068376068,
+      "specificity": 0.6923076923076923
+    },
+    "acjsd": {
+      "accuracy": 0.8391608391608392,
+      "balanced_accuracy": 0.8418803418803419,
+      "auroc": 0.9309664694280079,
+      "average_precision": 0.9826672074783825,
+      "brier": 0.11441202461719513,
+      "sensitivity": 0.8376068376068376,
+      "specificity": 0.8461538461538461
+    }
+  },
+  "contrasts": {
+    "accuracy": {
+      "difference_acjsd_minus_plain": 0.21678321678321677,
+      "ci95": [
+        0.1398601398601399,
+        0.2957746478873239
+      ],
+      "permutation_p_two_sided": 9.999000099990002e-05,
+      "holm_adjusted_p": 0.0005999400059994001
+    },
+    "balanced_accuracy": {
+      "difference_acjsd_minus_plain": 0.1923076923076924,
+      "ci95": [
+        0.0952742631463469,
+        0.2915614724150531
+      ],
+      "permutation_p_two_sided": 0.00019998000199980003,
+      "holm_adjusted_p": 0.0005999400059994001
+    },
+    "auroc": {
+      "difference_acjsd_minus_plain": 0.20973044049967127,
+      "ci95": [
+        0.12149785761762333,
+        0.30217322894189036
+      ],
+      "permutation_p_two_sided": 9.999000099990002e-05
+    },
+    "average_precision": {
+      "difference_acjsd_minus_plain": 0.07742309060788333,
+      "ci95": [
+        0.030916533359778207,
+        0.12851805034951325
+      ],
+      "permutation_p_two_sided": 9.999000099990002e-05,
+      "holm_adjusted_p": 0.0005999400059994001
+    },
+    "brier": {
+      "difference_acjsd_minus_plain": -0.16896666586399078,
+      "ci95": [
+        -0.22638883758336306,
+        -0.11305379141122114
+      ],
+      "permutation_p_two_sided": 9.999000099990002e-05,
+      "holm_adjusted_p": 0.0005999400059994001
+    },
+    "sensitivity": {
+      "difference_acjsd_minus_plain": 0.23076923076923084,
+      "ci95": [
+        0.14655172413793105,
+        0.31896551724137934
+      ],
+      "permutation_p_two_sided": 9.999000099990002e-05,
+      "holm_adjusted_p": 0.0005999400059994001
+    },
+    "specificity": {
+      "difference_acjsd_minus_plain": 0.15384615384615385,
+      "ci95": [
+        0.0,
+        0.33333333333333337
+      ],
+      "permutation_p_two_sided": 0.21787821217878212,
+      "holm_adjusted_p": 0.21787821217878212
+    }
+  },
+  "dataset_manifest": {
+    "csv_sha256": "7739f6850dc581938aebe13ccc1931e6d980cf7e981cbcd255068b3aac3ef442",
+    "eligible_images": 143,
+    "patients": 142,
+    "class_counts": {
+      "0": 26,
+      "1": 117
+    },
+    "cohort_audit": {
+      "frontal_ap_pa_rows": 202,
+      "eligible_rows_before_patient_conflict_exclusion": 143,
+      "excluded_conflicting_patients": 0,
+      "excluded_conflicting_rows": 0,
+      "negative_rule": "No Finding == 1 and Lung Opacity is 0 or blank; Lung Opacity == -1 is excluded"
+    },
+    "duplicate_image_hash_groups": 0,
+    "images_in_duplicate_hash_groups": 0,
+    "image_manifest_sha256": "a1f04329b1bfa0a9346b2e2dde21464e8e5d93551e4d6c14d6819df75be7660a"
+  },
+  "interpretation_rule": "confirmation requires a positive AUROC point difference and two-sided p<0.05"
+}

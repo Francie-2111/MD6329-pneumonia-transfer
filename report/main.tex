@@ -1,0 +1,214 @@
+\documentclass{article}
+\PassOptionsToPackage{numbers,sort&compress}{natbib}
+\usepackage[preprint]{neurips_2019}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref,url,booktabs,amsmath,amssymb,graphicx,microtype,array}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue,pdftitle={External Transfer and Spatial Evidence in Pneumonia Classification},pdfauthor={CUI SHIHAN}}
+\makeatletter
+\renewcommand{\@notice}{}
+\makeatother
+\title{External Transfer and Spatial Evidence in Pneumonia Classification}
+\author{CUI SHIHAN\\Student ID: G2602393H\\Nanyang Technological University\\MD6329 Deep Learning Project}
+\raggedbottom
+\begin{document}
+\maketitle
+\thispagestyle{plain}
+
+\begin{abstract}
+We study whether a small chest-radiograph classifier can improve external performance while relying more on opacity regions. A one-channel ResNet18 reproduces the PneumoniaMNIST baseline at $28\times28$ resolution. Increasing the native input to $64\times64$ raises RSNA external accuracy from 71.89\% to 80.57\% and AUROC from 0.8379 to 0.8720. Acquisition-style augmentation with Jensen--Shannon consistency (AC-JSD) further raises AUROC to 0.9012. Grad-CAM energy inside public opacity boxes improves relative to plain training, although pointing-hit and occlusion results are mixed. A source-only sweep selects $\lambda=36$, and a final CheXpert evaluation gives AUROC 0.9310 and accuracy 83.92\% for AC-JSD, compared with 0.7212 and 62.24\% for plain training. The results show that resolution explains most of the accuracy gain, while augmentation and consistency mainly improve ranking, robustness and average spatial alignment.
+\end{abstract}
+
+\section{Problem Formulation}
+Pneumonia classifiers can score well on an internal test set and perform differently at another hospital because population, acquisition and labeling practices change. They can also rely on image cues that correlate with the label without representing the pulmonary opacity itself \citep{zech2018,geirhos2020}. This project asks:
+
+\emph{Can higher resolution and source-only acquisition-style consistency training improve external pneumonia classification and make Grad-CAM evidence align better with annotated opacity regions?}
+
+The study uses a compact ResNet18 and three linked comparisons. First, it reproduces the 28-pixel MedMNIST baseline. Second, it isolates the effect of moving to native 64-pixel inputs. Third, it compares plain training, single-view augmentation (Aug1), three-view cross-entropy (CE3), and AC-JSD. Classification, robustness and explanation measures are evaluated separately. This follows the course emphasis on selecting metrics that match the clinical question and on interpreting neural-network predictions rather than relying on accuracy alone \citep{lecture02,lecture11}.
+
+A coding copilot assisted with code drafting and result-table checks. All numerical results in the paper come from executed experiment files.
+
+\section{Related Work}
+Kermany et al. demonstrated deep learning for pediatric chest-radiograph diagnosis \citep{kermany2018}. PneumoniaMNIST provides a lightweight version with fixed splits, and MedMNIST reports a ResNet18 reference AUROC of 0.944 and accuracy of 85.4\% \citep{yang2023}. Residual networks support stable optimization through skip connections \citep{he2016}; CheXNet is a related chest-radiograph classifier using a larger dataset and activation maps \citep{rajpurkar2017}.
+
+External generalization is a central concern in medical imaging. Zech et al. found substantial hospital-dependent changes in pneumonia performance \citep{zech2018}. Shortcut learning provides a broader explanation for models that exploit stable correlations in one dataset but unreliable cues elsewhere \citep{geirhos2020}. RSNA supplies expert opacity boxes for spatial evaluation \citep{shih2019}, while CheXpert supplies an independent validation cohort with expert labels \citep{irvin2019}. CheXlocalize further shows how chest-radiograph saliency can be compared with expert spatial annotations \citep{saporta2022}.
+
+Data augmentation can improve invariance. Mixup interpolates images and labels \citep{zhang2018}; CutMix replaces image regions and adjusts targets by retained area \citep{yun2019}. AugMix combines stochastic transformations with prediction consistency and improves robustness to common corruptions \citep{hendrycks2019,hendrycks2020}. Our AC-JSD method uses the consistency idea with mild transformations chosen for radiograph acquisition changes.
+
+CAM and Grad-CAM produce class-specific spatial maps from learned features \citep{zhou2016,selvaraju2017}. Saliency maps should also respond to learned parameters, which motivates randomization checks \citep{adebayo2018}. Occlusion gives a complementary intervention by masking a region and measuring the score change \citep{zeiler2014}. We therefore report heatmap alignment, parameter sensitivity and occlusion effects instead of treating a visual heatmap as sufficient evidence.
+
+\section{Data}
+\subsection{Cohorts}
+PneumoniaMNIST contains pediatric grayscale radiographs labeled normal or pneumonia. The official 28-pixel arrays are used for baseline reproduction and the official 64-pixel arrays for the resolution and training comparisons. RSNA supplies adult radiographs labeled Normal, Lung Opacity, or No Lung Opacity / Not Normal, together with opacity boxes for positive cases. The primary RSNA task compares Normal with Lung Opacity. CheXpert evaluation uses frontal AP/PA images with either Lung Opacity or explicit No Finding labels.
+
+\begin{table}[htbp]
+\caption{Data used in the study. Image counts are complete; PneumoniaMNIST does not provide patient identifiers.}
+\label{tab:data}\centering\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrr}\toprule
+Split & Normal & Positive & Other abnormal & Images & Patients\\\midrule
+Source train & 1,214 & 3,494 & -- & 4,708 & Not reported\\
+Source validation & 135 & 389 & -- & 524 & Not reported\\
+Source test & 234 & 390 & -- & 624 & Not reported\\
+RSNA diagnostic & 999 & 704 & 1,207 & 2,910 & 1,224\\
+RSNA external & 8,791 & 6,402 & 11,581 & 26,774 & 11,009\\
+CheXpert evaluation & 26 & 117 & Excluded & 143 & 142\\\bottomrule
+\end{tabular}}
+\end{table}
+
+The RSNA primary task contains 15,193 images. A broader stress test adds other abnormal images to the negative class, for 26,774 images. CheXpert contributes 143 eligible images from 142 patients: 117 Lung Opacity positives and 26 No Finding negatives.
+
+\subsection{Preprocessing}
+Source intensities are mapped to $[-1,1]$. RSNA DICOM processing applies rescale slope and intercept, reverses MONOCHROME1 images, scales each image by its minimum and maximum, center-crops to a square and resizes bilinearly. Box coordinates receive the same crop and resize. CheXpert JPEGs are converted to grayscale, min--max scaled, center-cropped and resized to $64\times64$. No external labels are used to fit preprocessing parameters.
+
+An exact-hash audit found duplicated source images. The original splits are retained for comparison with the published benchmark. For the final source-only model selection, 18 within-training duplicates and eight training images duplicated in validation are removed, then 469 unique training images are added to validation. This produces 4,213 training and 993 validation images.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=.92\linewidth]{figures/source_examples.pdf}
+\caption{Examples from the native 64-pixel PneumoniaMNIST training set.}
+\label{fig:source}
+\end{figure}
+
+\section{Approach}
+\subsection{Model and training}
+The model adapts the official MedMNIST small-image ResNet18 implementation \citep{medcode}. A one-channel $3\times3$ stem is followed by four residual stages with widths 64, 128, 256 and 512. Adaptive average pooling feeds a two-logit classifier. No ImageNet pretraining is used.
+
+Historical comparisons use seed 632901, Adam with initial learning rate 0.001, batch size 128 and at most 100 epochs. The learning rate is multiplied by 0.1 after epochs 50 and 75. The decision threshold is 0.5. B28 and B64 plain use cross-entropy. Aug1 trains on one augmented view. CE3 averages cross-entropy over a clean image and two independent augmented views.
+
+\subsection{Acquisition-style consistency}
+Each augmented view applies one to three operations: brightness factor $U(0.90,1.10)$, contrast factor $U(0.85,1.15)$, gamma exponent $U(0.85,1.15)$, rotation $U(-7^\circ,7^\circ)$, translation up to 0.03 normalized coordinates, $3\times3$ blur, or Gaussian noise with standard deviation $U(0.005,0.025)$. Horizontal flips and random anatomical crops are excluded.
+
+For clean and augmented predictions $p_0,p_1,p_2$, AC-JSD minimizes
+\begin{equation}
+\mathcal L=\frac{1}{3}\sum_{j=0}^{2}\operatorname{CE}(z_j,y)
++\frac{\lambda}{3}\sum_{j=0}^{2}D_{\rm KL}(p_j\Vert\bar p),
+\qquad \bar p=\frac{p_0+p_1+p_2}{3}.
+\end{equation}
+The design is inspired by AugMix consistency training \citep{hendrycks2020,augcode}, but does not use AugMix's mixture construction. A source-validation sweep over $\lambda\in\{1,3,12,36\}$ selects $\lambda=36$ for the final comparison.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth]{figures/model_training_flow.pdf}
+\caption{Shared ResNet18 and the four 64-pixel training conditions. Each model is trained separately.}
+\label{fig:method}
+\end{figure}
+
+\subsection{Evaluation}
+Classification metrics are accuracy, balanced accuracy, AUROC, average precision, sensitivity, specificity and Brier score. Robustness uses 11 fixed perturbation conditions derived from the training transformation ranges. Paired bootstrap intervals use 5,000 draws; external draws resample patients.
+
+Grad-CAM targets the pneumonia logit at the last residual stage. On 300 identical RSNA positive cases, area-corrected box energy is
+\begin{equation}
+E(A,M)=\frac{\sum_{u\in M}A_u}{\sum_u A_u+\epsilon}-\frac{|M|}{HW},
+\end{equation}
+where $A$ is the heatmap and $M$ is the union of opacity boxes. Pointing hit tests whether the maximum lies inside a box. A Gaussian center prior controls for chest-centered geometry. Parameter randomization compares trained maps with maps from a shared random network \citep{adebayo2018}. Occlusion compares the pneumonia probability and logit-margin drop after replacing the opacity region or matched outside regions with the image mean or local blur.
+
+\section{Experiments}
+\subsection{Baseline and resolution ablation}
+B28 reaches internal AUROC 0.9444 and accuracy 86.22\%, closely matching the published AUROC 0.944 and accuracy 85.4\% \citep{yang2023,medcode}. Its RSNA AUROC is 0.8379 and accuracy is 71.89\%. Raising the native resolution to 64 pixels increases internal accuracy by 4.33 percentage points and RSNA accuracy by 8.68 points. The corresponding RSNA AUROC rises to 0.8720. This is the largest accuracy gain in the study.
+
+\begin{table}[htbp]\centering\small
+\caption{Internal source test at threshold 0.5. BA is balanced accuracy; lower Brier is better.}
+\label{tab:internal}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrr}\toprule
+Model & Accuracy & BA & AUROC & Sensitivity & Specificity & Brier\\\midrule
+B28 & .8622 & .8171 & .9444 & .9974 & .6368 & .1276\\
+B64 plain & .9054 & .8825 & .9751 & .9744 & .7906 & .0751\\
+B64 Aug1 & .9135 & .8863 & .9758 & .9949 & .7778 & .0800\\
+B64 CE3 & .8942 & .8624 & .9718 & .9897 & .7350 & .0915\\
+B64 AC-JSD & .8862 & .8491 & .9780 & .9974 & .7009 & .0992\\\bottomrule
+\end{tabular}}
+\end{table}
+
+Aug1 has the highest internal accuracy, while AC-JSD has the highest AUROC and sensitivity. The ordering changes with the metric because AC-JSD detects more positive images but also produces more false positives.
+
+\subsection{External classification and component analysis}
+\begin{table}[htbp]\centering\small
+\caption{RSNA primary task on 15,193 images at threshold 0.5.}
+\label{tab:external}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrrr}\toprule
+Model & Accuracy & BA & AUROC & AP & Sensitivity & Specificity & Brier\\\midrule
+B28 & .7189 & .7401 & .8379 & .7754 & .8750 & .6052 & .2558\\
+B64 plain & .8057 & .7964 & .8720 & .8273 & .7370 & .8558 & .1724\\
+B64 Aug1 & .7917 & .8040 & .8965 & .8567 & .8818 & .7262 & .1852\\
+B64 CE3 & .7805 & .7886 & .8619 & .7858 & .8402 & .7370 & .1979\\
+B64 AC-JSD & .8093 & .8164 & .9012 & .8702 & .8614 & .7714 & .1662\\\bottomrule
+\end{tabular}}
+\end{table}
+
+AC-JSD raises AUROC over B64 plain by 0.0291, with paired 95\% interval $[0.0255,0.0330]$. Accuracy rises by 0.36 points, with interval $[-0.31,1.03]$, so the clearest gain is ranking rather than fixed-threshold accuracy. Aug1 already improves AUROC over plain by 0.0245. CE3 is weaker than Aug1, but adding JSD to CE3 raises AUROC by 0.0393 and accuracy by 2.88 points. The component controls therefore attribute part of the gain to augmentation and an additional gain to prediction consistency.
+
+On the broader RSNA task, which counts other abnormal images as negatives, accuracy is 69.69\% for plain and 62.15\% for AC-JSD. The false-positive rate on other abnormalities is 44.57\% and 62.49\%, respectively. AC-JSD is more sensitive to opacity-like abnormal appearance, which helps the primary task but reduces specificity when the negative class is broader.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=.96\linewidth]{figures/internal_ablation.pdf}
+\caption{Internal comparison of the four 64-pixel models.}
+\label{fig:ablation}
+\end{figure}
+
+\subsection{Robustness and explanation}
+On source validation, AC-JSD has the best mean perturbed AUROC (0.9982) and Grad-CAM stability (0.9694). Aug1 has the highest worst-condition accuracy (0.9695). Robustness therefore improves in different ways across the two methods.
+
+\begin{table}[htbp]\centering\small
+\caption{Matched RSNA explanation measures. Localization uses 300 positive images; occlusion uses 89 cases.}
+\label{tab:xai}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrr}\toprule
+Endpoint & Plain & Aug1 & CE3 & AC-JSD & Center prior\\\midrule
+Area-corrected energy & -.0336 & .0088 & -.0257 & -.0162 & .1011\\
+Pointing-hit rate & .0667 & .1200 & .0567 & .0867 & .1300\\
+Inside--outside probability drop, mean fill & .0369 & .0809 & .0215 & .0913 & --\\
+Inside--outside margin drop, mean fill & .6360 & 1.6571 & .8846 & 1.2743 & --\\
+Trained--random CAM cosine & .1697 & .2637 & .1981 & .2437 & --\\\bottomrule
+\end{tabular}}
+\end{table}
+
+AC-JSD improves area-corrected energy over plain by 0.01744, with paired 95\% interval $[0.01182,0.02326]$. Its pointing-hit rate rises from 6.67\% to 8.67\%, but the difference interval includes zero. Aug1 gives the strongest spatial alignment: energy 0.0088 and pointing-hit 12.0\%. The center prior reaches 13.0\%, showing that the dataset geometry is a strong reference.
+
+Mean-fill occlusion gives a larger inside-minus-outside probability drop for AC-JSD than for plain (0.0913 versus 0.0369), while blur replacement gives nearly equal values. The logit-margin analysis detects a larger mean-fill response that softmax probability can compress near one. The dependence result is therefore strongest under mean replacement and weaker under blur replacement.
+
+The matched randomization check gives low similarity between trained and shared-random Grad-CAMs for all four models. Progressive layer randomization also changes the maps, showing that they depend on learned parameters. This check does not rank lesion localization; the box metrics above provide that comparison.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=.96\linewidth]{figures/external_xai_intervals.pdf}
+\caption{RSNA box-energy and pointing-hit estimates on the same 300 positive cases. The dashed line is the center prior.}
+\label{fig:xai}
+\end{figure}
+
+\subsection{Source selection and CheXpert evaluation}
+The expanded source validation set is used to select the final consistency weight. The lowest validation Brier score is obtained with $\lambda=36$ (Table~\ref{tab:lambda}). Each final model saves best-Brier, best-AUROC, epoch-40 and last-epoch checkpoints. Results vary across these choices, so the external comparison uses the best-Brier rule for both models.
+
+\begin{table}[htbp]\centering\small
+\caption{Expanded-validation sweep for AC-JSD. Lower Brier is better.}
+\label{tab:lambda}
+\begin{tabular}{rrrrr}\toprule
+$\lambda$ & Best AUROC & Epoch & Best Brier & Epoch\\\midrule
+1  & .99782 & 82  & .01619 & 69\\
+3  & .99795 & 62  & .01397 & 72\\
+12 & .99804 & 100 & .01503 & 28\\
+36 & .99864 & 55  & .01253 & 94\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]\centering\small
+\caption{CheXpert evaluation on 143 images from 142 patients. AC-JSD uses $\lambda=36$; threshold is 0.5.}
+\label{tab:chexpert}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrrr}\toprule
+Model & Accuracy & BA & AUROC & AP & Brier & Sens. & Spec.\\\midrule
+Plain & .6224 & .6496 & .7212 & .9052 & .2834 & .6068 & .6923\\
+AC-JSD & .8392 & .8419 & .9310 & .9827 & .1144 & .8376 & .8462\\\bottomrule
+\end{tabular}}
+\end{table}
+
+The AUROC difference is 0.2097, with patient-bootstrap 95\% interval $[0.1215,0.3022]$ and paired permutation $p<0.001$. Accuracy improves by 21.68 points, interval $[13.99,29.58]$, and Brier score decreases by 0.1690, interval $[-0.2264,-0.1131]$. This independent cohort supports the classification benefit of the source-selected AC-JSD model.
+
+\clearpage
+\section{Conclusion}
+The reproduced 28-pixel baseline matches the published source AUROC scale but transfers less well to RSNA. Native 64-pixel input produces the largest accuracy gain. Acquisition-style augmentation improves external ranking, and JSD adds a further gain relative to the matched three-view control. AC-JSD also improves average box-energy alignment over plain training and gives more stable Grad-CAM maps, while Aug1 has the best absolute box alignment among the learned models. The CheXpert comparison confirms a large AUROC and accuracy advantage for the source-selected AC-JSD model.
+
+The study uses one training seed. PneumoniaMNIST patient identifiers are unavailable, RSNA boxes are coarse, and the CheXpert comparison contains 26 negatives. These facts set the scope of the estimates. A useful next step is multi-seed training with a larger patient-level external cohort and spatial supervision.
+
+\input{references.tex}
+\end{document}
+

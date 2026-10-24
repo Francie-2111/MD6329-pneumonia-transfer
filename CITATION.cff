@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this project, please cite the repository and the referenced datasets and methods."
+title: "External Transfer and Spatial Evidence in Pneumonia Classification"
+type: software
+authors:
+  - family-names: "Cui"
+    given-names: "Shihan"
+year: 2026

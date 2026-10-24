@@ -1,0 +1,34 @@
+{
+  "status": "complete",
+  "training_performed": false,
+  "models_selected": false,
+  "device": "cpu",
+  "seed": 632930,
+  "cam_cases": 50,
+  "occlusion_cases": 89,
+  "shared_random_reference": true,
+  "identical_randomized_parameter_hashes_by_stage": {
+    "linear": "6613e37843789ec7a8bf24e0c6304d62a6fc75131cd6a05af76a74ed8d918739",
+    "layer4_linear": "fea81466a014191c414744b3f2f80b8b085701aa2eaa05e3125e74952a0d36d6",
+    "layer3_to_linear": "08a479e8730c33ea262c9cf56fd4de444ec511b9f11b054cb411e6455978ed1f",
+    "layer2_to_linear": "f60e929b62a56451b7557c478c0cfc8a65a9088d9c0df2ef98e7a20f1b50ffdf",
+    "layer1_to_linear": "a6cf6bd90e571ab263bfa375b3c693c7fa1c5cbd1cc1326a18d126f29eaaaaed",
+    "all": "786c798d24edada0cd6ab2559ba358acbdb807276c6d433aa0a629d78bbe07ea"
+  },
+  "probability_occlusion_reproduced": true,
+  "limits": [
+    "Randomization is a necessary sensitivity check, not proof of clinical correctness.",
+    "Margin-target sensitivity uses 50 prespecified cases, not all 300 localization cases.",
+    "Occlusion is limited to 89 cases permitting matched translated masks and favors smaller boxes.",
+    "Intervals are conditional on frozen single-seed models and do not include training uncertainty."
+  ],
+  "files": [
+    "matched_parameter_randomization_cases.csv",
+    "matched_parameter_randomization_intervals.csv",
+    "matched_parameter_randomization.pdf",
+    "gradcam_target_sensitivity_cases.csv",
+    "gradcam_target_sensitivity_intervals.csv",
+    "margin_occlusion_cases.csv",
+    "margin_occlusion_intervals.csv"
+  ]
+}

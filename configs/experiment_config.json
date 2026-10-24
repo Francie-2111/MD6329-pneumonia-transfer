@@ -1,0 +1,31 @@
+{
+  "seed": 632901,
+  "input_resolutions": [
+    28,
+    64
+  ],
+  "optimizer": "Adam",
+  "learning_rate": 0.001,
+  "batch_size": 128,
+  "epochs": 100,
+  "lr_milestones": [
+    50,
+    75
+  ],
+  "models": [
+    "B28",
+    "B64 plain",
+    "B64 Aug1",
+    "B64 CE3",
+    "B64 AC-JSD"
+  ],
+  "acjsd_lambda_candidates": [
+    1,
+    3,
+    12,
+    36
+  ],
+  "selected_lambda": 36,
+  "threshold": 0.5,
+  "bootstrap_draws": 5000
+}
