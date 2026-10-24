@@ -1,0 +1,35 @@
+{
+  "acjsd_in_box_energy_share": {
+    "estimate": 0.10648872770150282,
+    "ci95": [
+      0.09415033010000173,
+      0.11922267740268029
+    ]
+  },
+  "mean_box_area_fraction": {
+    "estimate": 0.12264729817708334,
+    "ci95": [
+      0.11188320427062967,
+      0.13351747006786113
+    ]
+  },
+  "absolute_share_gain_vs_plain": {
+    "estimate": 0.01744443174689991,
+    "ci95": [
+      0.011822327093123638,
+      0.023258945217549017
+    ]
+  },
+  "relative_share_gain_percent_vs_plain": {
+    "estimate": 19.59073465614636,
+    "ci95": [
+      12.799063628287366,
+      27.471605817292456
+    ]
+  },
+  "n_images": 300,
+  "n_patients": 251,
+  "bootstrap_draws": 5000,
+  "definition": "sum of Grad-CAM energy inside union opacity boxes divided by total Grad-CAM energy",
+  "interpretation": "This nonnegative descriptive metric is derived from the same frozen heatmaps. The mean box-area fraction remains the area-only reference; the metric does not establish causal lesion recognition."
+}

@@ -36,7 +36,7 @@ flowchart LR
 | CheXpert | B64 plain | 0.6224 | 0.7212 |
 | CheXpert | B64 AC-JSD, λ=36 | **0.8392** | **0.9310** |
 
-Native 64-pixel input produces the largest accuracy gain over B28. Augmentation and JSD improve external ranking and robustness. On RSNA, AC-JSD improves area-corrected Grad-CAM energy over plain training; Aug1 gives the strongest absolute box alignment. Classification and localization are evaluated separately.
+Native 64-pixel input produces the largest accuracy gain over B28. Augmentation and JSD improve external ranking and robustness. On 300 matched RSNA-positive images, AC-JSD places 10.65% of Grad-CAM energy inside public opacity boxes, a 19.6% relative increase in the paired analysis. The 12.26% mean annotated area keeps this spatial result descriptive; external transfer is the main contribution.
 
 ![Internal comparison](figures/internal_ablation.png)
 

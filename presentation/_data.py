@@ -13,11 +13,10 @@ EXTERNAL_RESULTS = [
 ]
 
 XAI_RESULTS = [
-    {"model": "Plain", "area-corrected energy": -0.0336, "pointing hit": 0.0667, "mean-fill occlusion": 0.0369},
-    {"model": "Aug1", "area-corrected energy": 0.0088, "pointing hit": 0.1200, "mean-fill occlusion": 0.0809},
-    {"model": "CE3", "area-corrected energy": -0.0257, "pointing hit": 0.0567, "mean-fill occlusion": 0.0215},
-    {"model": "AC-JSD", "area-corrected energy": -0.0162, "pointing hit": 0.0867, "mean-fill occlusion": 0.0913},
-    {"model": "Center prior", "area-corrected energy": 0.1011, "pointing hit": 0.1300, "mean-fill occlusion": None},
+    {"measure": "In-box Grad-CAM energy", "AC-JSD result": "10.65%", "95% interval": "9.42%–11.92%"},
+    {"measure": "Relative energy gain", "AC-JSD result": "+19.6%", "95% interval": "12.8%–27.5%"},
+    {"measure": "Pointing-hit rate", "AC-JSD result": "8.67%", "95% interval": "5.61%–11.86%"},
+    {"measure": "Mean opacity-box area", "AC-JSD result": "12.26%", "95% interval": "11.19%–13.35%"},
 ]
 
 

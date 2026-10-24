@@ -18,7 +18,7 @@ def main():
         **CUI SHIHAN · G2602393H · MD6329**
 
         Can higher resolution and acquisition-style consistency improve external
-        pneumonia classification while making spatial evidence more lesion-aligned?
+        pneumonia classification, and how much spatial evidence overlaps annotated opacity?
     """)
     text("""
         ## Why this healthcare problem matters
@@ -64,8 +64,9 @@ def main():
            0.8720 to 0.9012, while the accuracy interval included zero.
         3. **The final external result transferred.** On CheXpert, AUROC rose from 0.7212
            to 0.9310 and accuracy from 62.24% to 83.92%.
-        4. **Spatial evidence improved relative to plain training, but was not conclusive.**
-           Aug1 had the best box alignment, and a simple center prior remained stronger.
+        4. **Spatial evidence is reported as an audit rather than the main contribution.**
+           AC-JSD placed 10.65% of Grad-CAM energy inside opacity boxes, a 19.6%
+           relative gain, while the 12.26% mean box area shows that localization remains limited.
 
         The healthcare lesson is that a model should be evaluated across institutions and
         with complementary spatial tests. A better heatmap supports interpretation, but it
@@ -248,24 +249,25 @@ def state_5_spatial_evidence():
         300 RSNA positive images, its energy inside public opacity boxes is compared
         with box area, and the maximum-activation point is tested against the box.
     """)
-    example_energy = area_corrected_energy(inside_energy=0.34, total_energy=1.00, box_area_fraction=0.25)
+    example_share = energy_in_box_share(inside_energy=0.34, total_energy=1.00)
     text(r"""
-        Area-corrected energy removes the score expected from box size alone:
-        $$E(A,M)=\frac{\sum_{u\in M}A_u}{\sum_u A_u+\epsilon}-\frac{|M|}{HW}.$$
+        Energy-in-box share is a nonnegative fraction:
+        $$S(A,M)=\frac{\sum_{u\in M}A_u}{\sum_u A_u+\epsilon},\qquad 0\leq S\leq1.$$
     """)
     table(
-        [{"inside heatmap energy": 0.34, "box area fraction": 0.25, "area-corrected energy": round(example_energy, 4)}],
-        caption="Small executable example of the localization metric",
+        [{"inside heatmap energy": 0.34, "total heatmap energy": 1.00, "energy-in-box share": round(example_share, 4)}],
+        caption="Executable example of the nonnegative localization metric",
     )
-    table(XAI_RESULTS, caption="Recorded RSNA explanation results on matched cases")
+    table(XAI_RESULTS, caption="AC-JSD spatial evidence on matched RSNA cases")
     image("figures/external_xai.png", width="82%")
-    energy_gain = -0.0162 - (-0.0336)
-    pointing_gain = 0.0867 - 0.0667
+    in_box_energy_share = 0.1065
+    relative_energy_gain_percent = 19.6
+    mean_box_area_fraction = 0.1226
     interpretation = {
-        "AC-JSD energy gain vs plain": round(energy_gain, 4),
-        "AC-JSD pointing gain vs plain": round(pointing_gain, 4),
-        "best box alignment": "Aug1",
-        "stronger reference": "Center prior",
+        "AC-JSD in-box energy share": in_box_energy_share,
+        "relative energy gain (%)": relative_energy_gain_percent,
+        "mean opacity-box area": mean_box_area_fraction,
+        "role in project": "supporting audit",
     }
     link(
         title="Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization",
@@ -273,7 +275,7 @@ def state_5_spatial_evidence():
         authors=["Selvaraju", "Cogswell", "Das", "Vedantam", "Parikh", "Batra"],
         date="2017",
     )
-    text("**Why this state matters.** Training changes where Grad-CAM places energy. AC-JSD improves average alignment over plain, but Aug1 and the center prior prevent an overclaim of lesion localization.")
+    text("**Why this state matters.** The final model assigns a measurable share of Grad-CAM energy to annotated opacity boxes, but the area reference prevents an overclaim. The project's main contribution remains external transfer, with localization reported as a supporting audit.")
     return interpretation
 
 
@@ -310,10 +312,9 @@ def compare_models(plain, improved):
     }
 
 
-def area_corrected_energy(inside_energy, total_energy, box_area_fraction):
-    observed_fraction = inside_energy / (total_energy + 1e-12)
-    corrected_energy = observed_fraction - box_area_fraction
-    return corrected_energy
+def energy_in_box_share(inside_energy, total_energy):
+    share = inside_energy / (total_energy + 1e-12)
+    return share
 
 
 if __name__ == "__main__":

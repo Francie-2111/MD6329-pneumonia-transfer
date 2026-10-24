@@ -16,7 +16,7 @@
 \thispagestyle{plain}
 
 \begin{abstract}
-We study whether a small chest-radiograph classifier can improve external performance while relying more on opacity regions. A one-channel ResNet18 reproduces the PneumoniaMNIST baseline at $28\times28$ resolution. Increasing the native input to $64\times64$ raises RSNA external accuracy from 71.89\% to 80.57\% and AUROC from 0.8379 to 0.8720. Acquisition-style augmentation with Jensen--Shannon consistency (AC-JSD) further raises AUROC to 0.9012. Grad-CAM energy inside public opacity boxes improves relative to plain training, although pointing-hit and occlusion results are mixed. A source-only sweep selects $\lambda=36$, and a final CheXpert evaluation gives AUROC 0.9310 and accuracy 83.92\% for AC-JSD, compared with 0.7212 and 62.24\% for plain training. The results show that resolution explains most of the accuracy gain, while augmentation and consistency mainly improve ranking, robustness and average spatial alignment.
+We study whether a small chest-radiograph classifier can improve external performance while providing auditable spatial evidence. A one-channel ResNet18 reproduces the PneumoniaMNIST baseline at $28\times28$ resolution. Increasing the native input to $64\times64$ raises RSNA external accuracy from 71.89\% to 80.57\% and AUROC from 0.8379 to 0.8720. Acquisition-style augmentation with Jensen--Shannon consistency (AC-JSD) further raises AUROC to 0.9012. A source-only sweep selects $\lambda=36$, and a final CheXpert evaluation gives AUROC 0.9310 and accuracy 83.92\% for AC-JSD, compared with 0.7212 and 62.24\% for plain training. On 300 matched RSNA-positive images, AC-JSD assigns 10.65\% of Grad-CAM energy to public opacity boxes, a 19.6\% paired relative increase. The mean annotated area is 12.26\%, so localization is interpreted as a supporting audit rather than the main contribution. The principal result is improved external transfer: resolution explains most of the accuracy gain, while augmentation and consistency mainly improve ranking and robustness.
 \end{abstract}
 
 \section{Problem Formulation}
@@ -95,11 +95,11 @@ The design is inspired by AugMix consistency training \citep{hendrycks2020,augco
 \subsection{Evaluation}
 Classification metrics are accuracy, balanced accuracy, AUROC, average precision, sensitivity, specificity and Brier score. Robustness uses 11 fixed perturbation conditions derived from the training transformation ranges. Paired bootstrap intervals use 5,000 draws; external draws resample patients.
 
-Grad-CAM targets the pneumonia logit at the last residual stage. On 300 identical RSNA positive cases, area-corrected box energy is
+Grad-CAM targets the pneumonia logit at the last residual stage. On 300 identical RSNA positive cases, we report the nonnegative energy-in-box share
 \begin{equation}
-E(A,M)=\frac{\sum_{u\in M}A_u}{\sum_u A_u+\epsilon}-\frac{|M|}{HW},
+S(A,M)=\frac{\sum_{u\in M}A_u}{\sum_u A_u+\epsilon},\qquad 0\leq S\leq1,
 \end{equation}
-where $A$ is the heatmap and $M$ is the union of opacity boxes. Pointing hit tests whether the maximum lies inside a box. A Gaussian center prior controls for chest-centered geometry. Parameter randomization compares trained maps with maps from a shared random network \citep{adebayo2018}. Occlusion compares the pneumonia probability and logit-margin drop after replacing the opacity region or matched outside regions with the image mean or local blur.
+where $A$ is the heatmap and $M$ is the union of opacity boxes. The mean box-area fraction $|M|/(HW)$ is reported as an area-only reference. The paired relative change uses the matched plain-training model on the same cases, but the main text emphasizes the final model's absolute value. Pointing hit tests whether the maximum lies inside a box. A Gaussian center prior controls for chest-centered geometry. Parameter randomization compares trained maps with maps from a shared random network \citep{adebayo2018}. Occlusion compares the pneumonia probability and logit-margin drop after replacing the opacity region or matched outside regions with the image mean or local blur.
 
 \section{Experiments}
 \subsection{Baseline and resolution ablation}
@@ -150,28 +150,28 @@ On the broader RSNA task, which counts other abnormal images as negatives, accur
 On source validation, AC-JSD has the best mean perturbed AUROC (0.9982) and Grad-CAM stability (0.9694). Aug1 has the highest worst-condition accuracy (0.9695). Robustness therefore improves in different ways across the two methods.
 
 \begin{table}[htbp]\centering\small
-\caption{Matched RSNA explanation measures. Localization uses 300 positive images; occlusion uses 89 cases.}
+\caption{Spatial audit of the final AC-JSD model. Localization uses 300 positive images; occlusion uses 89 cases. Intervals use patient-cluster bootstrap.}
 \label{tab:xai}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{lrrrrr}\toprule
-Endpoint & Plain & Aug1 & CE3 & AC-JSD & Center prior\\\midrule
-Area-corrected energy & -.0336 & .0088 & -.0257 & -.0162 & .1011\\
-Pointing-hit rate & .0667 & .1200 & .0567 & .0867 & .1300\\
-Inside--outside probability drop, mean fill & .0369 & .0809 & .0215 & .0913 & --\\
-Inside--outside margin drop, mean fill & .6360 & 1.6571 & .8846 & 1.2743 & --\\
-Trained--random CAM cosine & .1697 & .2637 & .1981 & .2437 & --\\\bottomrule
+\begin{tabular}{lrrl}\toprule
+Endpoint & AC-JSD estimate & 95\% interval & Context\\\midrule
+Grad-CAM energy-in-box share & 10.65\% & [9.42, 11.92]\% & Mean box area: 12.26\%\\
+Paired relative energy increase & 19.6\% & [12.8, 27.5]\% & Matched plain-training reference\\
+Pointing-hit rate & 8.67\% & [5.61, 11.86]\% & Maximum inside opacity box\\
+Inside--outside probability drop, mean fill & .0913 & [.0303, .1595] & Matched occlusion\\
+Inside--outside margin drop, mean fill & 1.2743 & [.3272, 2.2766] & Logit-margin target\\\bottomrule
 \end{tabular}}
 \end{table}
 
-AC-JSD improves area-corrected energy over plain by 0.01744, with paired 95\% interval $[0.01182,0.02326]$. Its pointing-hit rate rises from 6.67\% to 8.67\%, but the difference interval includes zero. Aug1 gives the strongest spatial alignment: energy 0.0088 and pointing-hit 12.0\%. The center prior reaches 13.0\%, showing that the dataset geometry is a strong reference.
+AC-JSD places 10.65\% of its Grad-CAM energy inside the union of public opacity boxes, with 95\% interval $[9.42,11.92]\%$. The paired relative increase in this share is 19.6\%, with interval $[12.8,27.5]\%$. The mean annotated area is 12.26\%, so the absolute energy share does not exceed the area-only reference. This result shows a positive training-associated change without establishing strong lesion localization.
 
-Mean-fill occlusion gives a larger inside-minus-outside probability drop for AC-JSD than for plain (0.0913 versus 0.0369), while blur replacement gives nearly equal values. The logit-margin analysis detects a larger mean-fill response that softmax probability can compress near one. The dependence result is therefore strongest under mean replacement and weaker under blur replacement.
+For AC-JSD, mean-fill occlusion gives an inside-minus-outside probability drop of 0.0913 and a logit-margin drop of 1.2743. Blur replacement gives nearly equal inside and outside responses. The larger margin response shows why softmax probability can hide a score change near one; the dependence result is therefore strongest under mean replacement and weaker under blur replacement.
 
 The matched randomization check gives low similarity between trained and shared-random Grad-CAMs for all four models. Progressive layer randomization also changes the maps, showing that they depend on learned parameters. This check does not rank lesion localization; the box metrics above provide that comparison.
 
 \begin{figure}[htbp]\centering
 \includegraphics[width=.96\linewidth]{figures/external_xai_intervals.pdf}
-\caption{RSNA box-energy and pointing-hit estimates on the same 300 positive cases. The dashed line is the center prior.}
+\caption{AC-JSD Grad-CAM spatial evidence on the same 300 RSNA-positive cases. The left panel reports the nonnegative in-box energy share and mean annotated-area reference; the right panel reports the paired relative change.}
 \label{fig:xai}
 \end{figure}
 
@@ -205,7 +205,7 @@ The AUROC difference is 0.2097, with patient-bootstrap 95\% interval $[0.1215,0.
 
 \clearpage
 \section{Conclusion}
-The reproduced 28-pixel baseline matches the published source AUROC scale but transfers less well to RSNA. Native 64-pixel input produces the largest accuracy gain. Acquisition-style augmentation improves external ranking, and JSD adds a further gain relative to the matched three-view control. AC-JSD also improves average box-energy alignment over plain training and gives more stable Grad-CAM maps, while Aug1 has the best absolute box alignment among the learned models. The CheXpert comparison confirms a large AUROC and accuracy advantage for the source-selected AC-JSD model.
+The reproduced 28-pixel baseline matches the published source AUROC scale but transfers less well to RSNA. Native 64-pixel input produces the largest accuracy gain. Acquisition-style augmentation improves external ranking, and JSD adds a further gain relative to the matched three-view control. The CheXpert comparison confirms a large AUROC and accuracy advantage for the source-selected AC-JSD model. Its Grad-CAM energy-in-box share is 10.65\%, with a 19.6\% paired relative increase, but it remains below the 12.26\% mean annotated-area reference. External transfer is therefore the main contribution; the spatial analysis is evidence about model behavior and a clear limit on lesion-localization claims.
 
 The study uses one training seed. PneumoniaMNIST patient identifiers are unavailable, RSNA boxes are coarse, and the CheXpert comparison contains 26 negatives. These facts set the scope of the estimates. A useful next step is multi-seed training with a larger patient-level external cohort and spatial supervision.
 

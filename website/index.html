@@ -62,7 +62,7 @@
         <p class="large-copy">
           The project tests whether higher native image resolution and source-only
           acquisition-style consistency training improve external pneumonia classification
-          and make Grad-CAM evidence better aligned with public opacity annotations.
+          while auditing whether Grad-CAM evidence falls inside public opacity annotations.
         </p>
         <div class="context-card">
           <span class="card-index">01</span>
@@ -158,15 +158,15 @@
       <div class="section-shell section-block evidence-grid">
         <div class="evidence-copy">
           <p class="eyebrow">Spatial evidence</p>
-          <h2>Interpretability improves, but the result remains cautious.</h2>
-          <p>AC-JSD improves average box-energy alignment and matched mean-fill occlusion over plain training. Aug1 has the strongest box alignment, while a simple center prior remains competitive.</p>
-          <p class="takeaway">The maps depend on learned parameters, but better heatmaps do not by themselves prove causal lesion recognition.</p>
+          <h2>A bounded, nonnegative audit of spatial evidence.</h2>
+          <p>The final AC-JSD model places 10.65% of Grad-CAM energy inside public opacity boxes. This is a 19.6% relative increase over the matched training reference, with a 95% interval of 12.8%–27.5% for the relative change.</p>
+          <p class="takeaway">The mean annotated area is 12.26%, so spatial localization remains limited. The project's main contribution is external transfer; Grad-CAM is a supporting audit and does not prove causal lesion recognition.</p>
         </div>
         <figure>
           <a href="assets/external_xai.png" target="_blank" rel="noopener" aria-label="Open external explanation figure">
-            <img src="assets/external_xai.png" alt="RSNA box-energy alignment and pointing-hit rate for four learned models with a center-prior reference.">
+            <img src="assets/external_xai.png" alt="AC-JSD Grad-CAM energy inside RSNA opacity boxes and its paired relative increase, with confidence intervals.">
           </a>
-          <figcaption>Matched RSNA explanation results on 300 positive cases. Error bars show uncertainty; dashed lines show the center prior.</figcaption>
+          <figcaption>AC-JSD spatial evidence on 300 matched RSNA-positive images. The dashed line shows mean annotated area; intervals use patient-cluster bootstrap.</figcaption>
         </figure>
       </div>
     </section>
